@@ -40,8 +40,8 @@ Pastikan Anda telah menginstal yang berikut ini:
 3.  **Siapkan file `.env`:**
     Buat file baru bernama `.env` di direktori root proyek Anda atau anda juga bisa copy file `.env.example` dan beri nama hasil copy tadi menjadi `.env`. Selanjutnya tambahkan variabel berikut jika belum ada:
     ```
-    PORT=3333
     GEMINI_API_KEY=PLACE_YOUR_GEMINI_API_KEY_HERE
+    PORT=3333
     ```
     Ganti `PLACE_YOUR_GEMINI_API_KEY_HERE` dengan kunci API Gemini Anda.
 
