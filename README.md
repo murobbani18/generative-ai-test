@@ -24,8 +24,8 @@ Pastikan Anda telah menginstal yang berikut ini:
 
 1.  **Clone repositori:**
     ```bash
-    git clone <URL_REPOSITORI_ANDA>
-    cd <NAMA_FOLDER_PROYEK>
+    git clone https://github.com/murobbani18/generative-ai-test.git
+    cd generative-ai-test
     ```
 
 2.  **Instal dependensi:**
