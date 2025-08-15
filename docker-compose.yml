@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Konfigurasi untuk backend (Node.js)
+  backend:
+    build:
+      context: ./server
+    container_name: genai-backend
+    ports:
+      - "3006:3006" # Port 3006 untuk backend, sesuai dengan informasi yang saya simpan
+    restart: unless-stopped
+    volumes:
+      - ./server:/app # Mount volume untuk hot-reloading (opsional, tapi berguna saat pengembangan)
+      - /app/node_modules # Mencegah local node_modules menimpa container
+
+  # Konfigurasi untuk frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: genai-frontend
+    ports:
+      - "80:80" # Port 80 untuk frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app # Mount volume untuk hot-reloading (opsional)
+      - /app/node_modules
+    depends_on:
+      - backend # Pastikan backend berjalan sebelum frontend

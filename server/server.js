@@ -32,8 +32,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-
-
 // Inisialisasi GoogleGenerativeAI
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -46,8 +44,12 @@ app.get('/', (req, res) => {
   res.send('Hello from the server!');
 });
 
+// Tambahkan '/v1' di setiap endpoint
+const apiRouter = express.Router();
+app.use('/v1', apiRouter);
+
 // Endpoint untuk input teks saja
-app.post('/generate-text', async (req, res) => {
+apiRouter.post('/generate-text', async (req, res) => {
   const { prompt } = req.body;
 
   if (!prompt) {
@@ -65,7 +67,7 @@ app.post('/generate-text', async (req, res) => {
 });
 
 // Endpoint untuk input gambar
-app.post('/generate-from-image', upload.single('image'), async (req, res) => {
+apiRouter.post('/generate-from-image', upload.single('image'), async (req, res) => {
   const { prompt } = req.body;
   const file = req.file;
 
@@ -96,7 +98,7 @@ app.post('/generate-from-image', upload.single('image'), async (req, res) => {
 });
 
 // Endpoint untuk input dokumen
-app.post('/generate-from-document', upload.single('document'), async (req, res) => {
+apiRouter.post('/generate-from-document', upload.single('document'), async (req, res) => {
   const { prompt } = req.body;
   const file = req.file;
 
@@ -125,7 +127,7 @@ app.post('/generate-from-document', upload.single('document'), async (req, res) 
 });
 
 // Endpoint untuk input audio
-app.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
+apiRouter.post('/generate-from-audio', upload.single('audio'), async (req, res) => {
   const { prompt } = req.body;
   const file = req.file;
 
