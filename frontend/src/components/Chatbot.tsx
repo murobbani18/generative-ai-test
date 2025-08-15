@@ -15,6 +15,7 @@ import "highlight.js/styles/github.css"; // bebas pilih tema
 interface Message {
   text: string;
   sender: 'user' | 'bot';
+  file?: File;
 }
 
 const ChatBot: React.FC = () => {
@@ -66,8 +67,12 @@ const ChatBot: React.FC = () => {
   
     if (!chatInitialized) setChatInitialized(true);
   
+    const newMessage: Message = { text: input || (file ? file.name : ''), sender: 'user', file: file ? file : undefined };
     // Masukkan pesan user
-    setMessages(prev => [...prev, { text: input || (file ? file.name : ''), sender: 'user' }]);
+    setMessages((prev: Message[]) => [
+      ...prev,
+      newMessage
+    ]);
   
     try {
       const botReplyArray = await sendMessage({ text: input, file });
@@ -117,7 +122,9 @@ const ChatBot: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <ListGroup variant="flush">
+            <ListGroup variant="flush" style={{
+              marginBottom: file ? '115px' : '0',
+            }}>
               {messages.map((msg, index) => (
                 <ListGroup.Item
                   key={index}
@@ -127,6 +134,26 @@ const ChatBot: React.FC = () => {
                   <div className={clsx("sender-label", msg.sender === 'user' ? 'pe-2' : 'ps-2')} >
                     {msg.sender === 'user' ? 'Anda' : 'Gemini'}
                   </div>
+                  {msg.file && (
+                    <div className="mt-2">
+                      {msg.file.type.startsWith("image/") ? (
+                        <img
+                          src={URL.createObjectURL(msg.file)}
+                          alt="Attachment"
+                          style={{
+                            maxWidth: 200,
+                            maxHeight: 200,
+                            borderRadius: 8,
+                            border: "1px solid #ccc"
+                          }}
+                        />
+                      ) : (
+                        <a href={URL.createObjectURL(msg.file)} download={msg.file.name}>
+                          📎 {msg.file.name}
+                        </a>
+                      )}
+                    </div>
+                  )}
                   <div className="message-bubble shadow">
                     {msg.sender === 'bot' ? (
                       <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
@@ -143,70 +170,118 @@ const ChatBot: React.FC = () => {
           </motion.div>
         )}
 
-        <Form 
-          className={clsx("chatbot-input-form gap-2 shadow", chatInitialized ? "p-3" : "p-4")}
-          onSubmit={handleSendMessage}
-          style={{
-            background: 'rgba(255, 255, 255, 0.8)',
-            position: chatInitialized ? 'sticky' : 'static',
-            bottom: 0,
-            width: '100%',
-          }}
-        >
-          <Form.Control
-            type="text"
-            placeholder={chatInitialized ? "Ketik pesan Anda..." : "Mulai percakapan"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className=""
+        <div className="position-relative">
+          {/* Preview file sebelum dikirim */}
+          {file && (
+            <div className="position-absolute shadow-lg px-4 py-2" style={{
+              top: "-115px",
+              left: 15,
+              right: 15,
+              borderRadius: '20px 20px 20px 20px',
+              background: '#f8f8f8',
+              maxWidth: '1000px',
+            }}>
+              <div className="mb-2">Lampiran file:</div>
+              <div className="mb-2 d-flex align-items-center gap-2" style={{ background: 'transparent' }}>
+                {file.type.startsWith("image/") ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="Preview"
+                    style={{
+                      width: 50,
+                      height: 50,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      border: "1px solid #ccc"
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      padding: "5px 10px",
+                      border: "1px solid #ccc",
+                      borderRadius: 8,
+                      background: "#f8f8f8"
+                    }}
+                  >
+                    📎 {file.name}
+                  </div>
+                )}
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  onClick={() => setFile(null)}
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+          )}
+          <Form 
+            className={clsx("chatbot-input-form gap-2 shadow", chatInitialized ? "p-3" : "p-4")}
+            onSubmit={handleSendMessage}
             style={{
-              borderRadius: '30px',
-              height: '50px',
+              background: 'rgba(255, 255, 255, 0.8)',
+              position: chatInitialized ? 'sticky' : 'static',
+              bottom: 0,
+              width: '100%',
             }}
-            disabled={isLoading}
-          />
-          <Form.Control
-            type="file"
-            ref={fileInputRef}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setFile(e.target.files?.[0] || null)
-            }
-            style={{ display: 'none' }}
-            disabled={isLoading}
-          />
-          <OverlayTrigger
-            placement="top"
-            overlay={<Tooltip>Pilih file</Tooltip>}
           >
-            <Button
-              variant="light"
-              type="button"
-              onClick={handlePickFile}
-              disabled={isLoading}
-              className="d-flex align-items-center justify-content-center shadow-sm"
+            <Form.Control
+              type="text"
+              placeholder={chatInitialized ? "Ketik pesan Anda..." : "Mulai percakapan"}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className=""
               style={{
-                width: '50px',
+                borderRadius: '30px',
                 height: '50px',
-                borderRadius: '50%',
               }}
+              disabled={isLoading}
+            />
+            <Form.Control
+              type="file"
+              ref={fileInputRef}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFile(e.target.files?.[0] || null)
+              }
+              style={{ display: 'none' }}
+              disabled={isLoading}
+            />
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip>Pilih file</Tooltip>}
             >
-              <GoPaperclip size={20} />
+              <Button
+                variant="light"
+                type="button"
+                onClick={handlePickFile}
+                disabled={isLoading}
+                className="d-flex align-items-center justify-content-center shadow-sm"
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                }}
+              >
+                <GoPaperclip size={20} />
+              </Button>
+            </OverlayTrigger>
+            <Button 
+              variant="primary" 
+              type="submit"
+              className='d-flex gap-2 justify-content-center align-items-center px-4'
+              style={{
+                width: '130px',
+                borderRadius: '30px',
+                height: '50px',
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Mengirim...' : <>Kirim <GoPaperAirplane /></>}
             </Button>
-          </OverlayTrigger>
-          <Button 
-            variant="primary" 
-            type="submit"
-            className='d-flex gap-2 justify-content-center align-items-center px-4'
-            style={{
-              width: '130px',
-              borderRadius: '30px',
-              height: '50px',
-            }}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Mengirim...' : <>Kirim <GoPaperAirplane /></>}
-          </Button>
-        </Form>
+          </Form>
+        </div>
       </Container>
     </div>
   );
