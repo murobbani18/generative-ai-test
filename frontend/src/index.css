@@ -24,12 +24,29 @@
   display: flex;
 }
 
-.user-message {
-  justify-content: flex-end;
+.sender-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 5px;
 }
 
-.bot-message {
-  justify-content: flex-start;
+.user-message{
+  align-items: flex-end;
+}
+
+.bot-message{
+  align-items: flex-start;
+  background-color: white;
+}
+
+.user-message .sender-label {
+  text-align: right;
+  width: 100%;
+}
+
+.bot-message .sender-label {
+  text-align: left;
+  width: 100%;
 }
 
 .message-bubble {

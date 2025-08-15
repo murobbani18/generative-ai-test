@@ -7,7 +7,7 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 
-const { PORT, GEMINI_API_KEY } = process.env;
+const { PORT, GEMINI_API_KEY, FRONTEND_URL } = process.env;
 
 // Pastikan API key ada
 if (!GEMINI_API_KEY) {
@@ -37,7 +37,12 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: FRONTEND_URL || 80,
+  optionsSuccessStatus: 200 
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req, res) => {
