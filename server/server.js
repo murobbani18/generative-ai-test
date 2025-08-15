@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import "dotenv/config";
 
 import express from 'express';
@@ -21,7 +21,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// Konfigurasi Multer untuk menangani file upload
+// Konfigurasi Multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -32,8 +32,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Inisialisasi GoogleGenerativeAI
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Inisialisasi GoogleGenAI
+const genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const app = express();
 
@@ -49,11 +49,57 @@ app.get('/', (req, res) => {
   res.send('Hello from the server!');
 });
 
-// Tambahkan '/v1' di setiap endpoint
 const apiRouter = express.Router();
 app.use('/v1', apiRouter);
 
-// Endpoint untuk input teks saja
+// ===== Endpoint Chat Multimodal =====
+apiRouter.post('/chat', upload.single('file'), async (req, res) => {
+  try {
+    const { text } = req.body;
+    const file = req.file;
+
+    if (!text && !file) {
+      return res.status(400).send('Provide at least text or file');
+    }
+
+    const contents = [];
+
+    if (text) {
+      contents.push({ role: "user", parts: [{ text }] });
+    }
+
+    if (file) {
+      const fileBuffer = fs.readFileSync(file.path);
+      const mimeType = file.mimetype;
+
+      contents.push({
+        role: "user",
+        parts: [{
+          inlineData: {
+            data: fileBuffer.toString('base64'),
+            mimeType
+          }
+        }]
+      });
+
+      fs.unlinkSync(file.path); // hapus file tmp
+    }
+
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents
+    });
+
+    const reply = response.candidates[0].content.parts.map(part => part.text) || [];
+
+    res.status(200).json({ reply });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error generating chat response' });
+  }
+});
+
+// Endpoint untuk input teks
 apiRouter.post('/generate-text', async (req, res) => {
   const { prompt } = req.body;
 
@@ -62,14 +108,29 @@ apiRouter.post('/generate-text', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(prompt);
-    res.status(200).send(result.response.text());
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }]
+    });
+    res.status(200).send(response.output_text);
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error generating text');
   }
 });
+
+// Fungsi helper untuk buat konten multimodal
+const createMultimodalContent = (prompt, file) => {
+  return [
+    { role: "user", parts: [{ text: prompt }] },
+    { role: "user", parts: [{ 
+      inlineData: {
+        data: fs.readFileSync(file.path).toString('base64'),
+        mimeType: file.mimetype,
+      }
+    }]}
+  ];
+};
 
 // Endpoint untuk input gambar
 apiRouter.post('/generate-from-image', upload.single('image'), async (req, res) => {
@@ -77,27 +138,20 @@ apiRouter.post('/generate-from-image', upload.single('image'), async (req, res) 
   const file = req.file;
 
   if (!prompt || !file) {
-    // Hapus file jika ada, karena permintaan tidak valid
     if (file) fs.unlinkSync(file.path);
     return res.status(400).send('Prompt and image file are required');
   }
 
   try {
-    const imagePart = {
-      inlineData: {
-        data: fs.readFileSync(file.path).toString('base64'),
-        mimeType: file.mimetype,
-      }
-    };
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent([prompt, imagePart]);
-    res.status(200).send(result.response.text());
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: createMultimodalContent(prompt, file)
+    });
+    res.status(200).send(response.output_text);
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error generating content from image');
   } finally {
-    // Pastikan file dihapus setelah diproses
     fs.unlinkSync(file.path);
   }
 });
@@ -113,16 +167,11 @@ apiRouter.post('/generate-from-document', upload.single('document'), async (req,
   }
 
   try {
-    const documentPart = {
-      inlineData: {
-        data: fs.readFileSync(file.path).toString('base64'),
-        mimeType: file.mimetype,
-      }
-    };
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent([prompt, documentPart]);
-    res.status(200).send(result.response.text());
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: createMultimodalContent(prompt, file)
+    });
+    res.status(200).send(response.output_text);
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error generating content from document');
@@ -142,16 +191,11 @@ apiRouter.post('/generate-from-audio', upload.single('audio'), async (req, res) 
   }
 
   try {
-    const audioPart = {
-      inlineData: {
-        data: fs.readFileSync(file.path).toString('base64'),
-        mimeType: file.mimetype,
-      }
-    };
-
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent([prompt, audioPart]);
-    res.status(200).send(result.response.text());
+    const response = await genAI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: createMultimodalContent(prompt, file)
+    });
+    res.status(200).send(response.output_text);
   } catch (error) {
     console.error(error);
     return res.status(500).send('Error generating content from audio');
