@@ -2,6 +2,8 @@
 
 Ini adalah project chatbot menggunakan **Google Gemini API**, dengan **frontend React + Vite** dan **backend Node.js + Express**, serta **Redis** untuk menyimpan session/chat history.
 
+Proyek ini dibuat oleh **Mufti Robbani** untuk tugas akhir dari kelas **AI Productivity and AI API Integration for Developers - PartnershipsH8 Session 5**. Proyek ini adalah lanjutan dari session 4 yang bisa dilihat di branch session-4.
+
 ---
 
 ## Struktur Project
