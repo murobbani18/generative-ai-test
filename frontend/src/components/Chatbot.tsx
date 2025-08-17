@@ -7,6 +7,7 @@ import { Container, Form, Button, ListGroup } from 'react-bootstrap';
 import { GoPaperAirplane } from "react-icons/go";
 import { motion } from 'framer-motion';
 import { useChatApi } from '../hooks/useChatApi';
+import { v4 as uuidv4 } from 'uuid';
 
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -29,6 +30,14 @@ const ChatBot: React.FC = () => {
   const handlePickFile = () => fileInputRef.current?.click();
 
   const { sendMessage, isLoading } = useChatApi();
+  const sessionIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Buat ID sesi unik saat komponen pertama kali di-render
+    if (!sessionIdRef.current) {
+      sessionIdRef.current = uuidv4();
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

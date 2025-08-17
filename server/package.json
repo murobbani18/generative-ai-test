@@ -1,11 +1,14 @@
 {
+  "type": "module",
   "dependencies": {
     "@google/genai": "^1.13.0",
     "@google/generative-ai": "^0.24.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "redis": "^5.8.1"
   },
   "name": "generative-ai-test",
   "version": "1.0.0",

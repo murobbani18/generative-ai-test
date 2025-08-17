@@ -21,6 +21,7 @@ export const useChatApi = () => {
       const res = await fetch( API_URL +'/chat', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       const data = await res.json();
