@@ -70,6 +70,13 @@ Proyek ini dibuat oleh **Mufti Robbani** untuk tugas akhir dari kelas **AI Produ
   - `PORT` → port backend
   - API keys untuk Gemini (`GENAI_API_KEY`) dan Redis (`REDIS_HOST`, `REDIS_PORT`)
 
+--- 
+
+## Note:
+
+- **Pastikan** bahwa `.env` file ada dalam direktori `/frontend/.env` dan `/server/.env`. 
+- **Jika belum ada**, anda bisa menggunakan file `.env.example` sebagai referensi. File tersebut berada dalam masing-masing direktiri (`frontend` dan `server`)
+
 ---
 
 ## Menjalankan Project
@@ -138,6 +145,8 @@ npm run dev
 ```bash
 cd server
 npm install
+
+## atur .env file terlebih dahulu. Gunakan .env.example sebagai referensi.
 npm run start
 ```
 
