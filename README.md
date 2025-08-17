@@ -8,7 +8,7 @@ Proyek ini dibuat oleh **Mufti Robbani** untuk tugas akhir dari kelas **AI Produ
 
 ## Screenshot Aplikasi Chatbot
 
-![Screenshot Chatbot](frontend/public/Screenshot 2025-08-17 at 10.04.26 PM.png)
+![Screenshot Chatbot](frontend/public/screenshot-chatbot.png)
 
 ---
 
