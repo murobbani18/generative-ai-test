@@ -126,6 +126,8 @@ docker logs -f genai-frontend
 ```bash
 cd frontend
 npm install
+
+## atur .env file terlebih dahulu. Gunakan .env.example sebagai referensi.
 npm run dev
 ```
 
