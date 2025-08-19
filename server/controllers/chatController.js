@@ -42,7 +42,11 @@ export const chatHandler = async (req, res) => {
     console.log("chatHistory:", chatHistory);
 
     if (text) {
-      chatHistory.push({ role: "user", parts: [{ text }] });
+      chatHistory.push({ 
+        role: "user", 
+        parts: [{ text }], 
+        timestamp: Date.now() 
+      });
     }
 
     if (file) {
@@ -56,12 +60,15 @@ export const chatHandler = async (req, res) => {
             },
           },
         ],
+        timestamp: Date.now()
       });
       fs.unlinkSync(file.path);
     }
-
-    const recentHistory = chatHistory.slice(-20);
-
+    
+    const recentHistory = chatHistory.slice(-20).map(({ role, parts }) => ({
+      role,
+      parts,
+    }));
 
     // panggil Gemini API
     const response = await genAI.models.generateContent({
@@ -71,7 +78,12 @@ export const chatHandler = async (req, res) => {
 
     console.log("response dari Gemini:", JSON.stringify(response))
     const reply = response.text;
-    chatHistory.push({ role: "model", parts: [{ text: reply }] });
+
+    chatHistory.push({ 
+      role: "model", 
+      parts: [{ text: reply }], 
+      timestamp: Date.now() 
+    });
 
     console.log("save to redis: ", sessionId, JSON.stringify(chatHistory));
     // simpan ke Redis

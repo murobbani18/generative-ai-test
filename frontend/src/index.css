@@ -1,3 +1,7 @@
+body{
+  font-family: "Oxygen", sans-serif;
+}
+
 .chatbot-container {
   margin: auto;
   border: 1px solid #ddd;
@@ -49,7 +53,7 @@
 }
 
 .message-bubble {
-  padding: 10px 15px;
+  padding: .75rem 1rem;
   border-radius: 20px;
   max-width: 70%;
   word-wrap: break-word;
@@ -61,7 +65,7 @@
 }
 
 .bot-message .message-bubble {
-  background-color: #e9ecef;
+  background-color: #fff;
   color: black;
 }
 
